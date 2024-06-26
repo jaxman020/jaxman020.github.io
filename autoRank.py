@@ -17,7 +17,7 @@ v_window = 7
 
 # 定义获取历史数据的方法
 def get_historical_data(symbol):
-    since = exchange.parse8601('2024-01-01T00:00:00Z')  # 从2023年1月1日开始获取数据
+    since = exchange.parse8601('2024-01-01T00:00:00Z')  # 从2024年1月1日开始获取数据
     ohlcv = exchange.fetch_ohlcv(symbol, timeframe='1d', since=since)
     df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms', utc=True)
@@ -27,29 +27,11 @@ def get_historical_data(symbol):
 # 计算RS值的方法，使用7天窗口
 def calculate_rs(df):
     df = df.copy()  # 避免SettingWithCopyWarning
-    df['price_change'] = df['close'].diff()
-    df['gain'] = np.where(df['price_change'] > 0, df['price_change'], 0)
-    df['loss'] = np.where(df['price_change'] < 0, -df['price_change'], 0)
-    if len(df) < v_window:  # 检查数据量是否足够
-        return np.nan
-    avg_gain = df['gain'].rolling(window=v_window).mean().iloc[-1]
-    avg_loss = df['loss'].rolling(window=v_window).mean().iloc[-1]
-    rs = avg_gain / avg_loss if avg_loss != 0 else 0
+    df['price_change'] = df['close'].pct_change(periods=v_window)  # 计算7天的价格变化百分比
+    rs = df['price_change'].iloc[-1]  # 使用最新的价格变化作为RS值
     return rs
 
-# 计算五日内的RS值变化，使用7天窗口
-def calculate_rs_change(df):
-    rs_values = []
-    for i in range(len(df) - (v_window - 1)):  # 确保窗口长度为7
-        window_df = df.iloc[i:i+v_window].copy()  # 避免SettingWithCopyWarning
-        rs = calculate_rs(window_df)
-        if not np.isnan(rs):
-            rs_values.append(rs)
-    if len(rs_values) < 5:
-        return np.nan, np.nan
-    return rs_values[-1], rs_values[-5]  # 返回最新的RS值和五天前的RS值
-
-# 获取所有U本位合约的RS值和五日变化
+# 获取所有U本位合约的RS值
 data = []
 for symbol in usdt_contracts:
     df = get_historical_data(symbol)
@@ -57,31 +39,28 @@ for symbol in usdt_contracts:
         continue
     rs = calculate_rs(df)
     if not np.isnan(rs):
-        latest_rs, rs_5_days_ago = calculate_rs_change(df)
-        if not np.isnan(latest_rs) and not np.isnan(rs_5_days_ago):
-            rs_change = latest_rs - rs_5_days_ago
-            data.append({
-                'symbol': symbol,
-                'rs': rs,
-                'rs_change': rs_change,
-                'latest_rs': latest_rs,
-                'rs_5_days_ago': rs_5_days_ago
-            })
+        data.append({
+            'symbol': symbol,
+            'rs': rs
+        })
 
 # 创建DataFrame
 df = pd.DataFrame(data)
 
 # 按照RS值排序
-sorted_df = df.sort_values(by='rs', ascending=False)
+df = df.sort_values(by='rs', ascending=False)
+
+# 计算RS的排名（PR值）
+df['rank'] = df['rs'].rank(pct=True) * 100
 
 # 提取最强和最弱的各10个币种且RS不為零
-sorted_df = sorted_df[sorted_df['rs'] != 0]
-top_10 = sorted_df.head(10)
-bottom_10 = sorted_df.tail(10)
+df = df[df['rs'] != 0]
+top_10 = df.head(10)
+bottom_10 = df.tail(10)
 
 # 计算五日续强标的和五日渐强标的
-continuously_strong = df[df['rs_change'] > 0].sort_values(by='rs_change', ascending=False).head(10)
-gradually_strong = df[df['rs_change'] < 0].sort_values(by='rs_change', ascending=True).head(10)
+continuously_strong = df[df['rs'] > df['rs'].mean()].sort_values(by='rs', ascending=False).head(10)
+gradually_strong = df[df['rs'] < df['rs'].mean()].sort_values(by='rs', ascending=True).head(10)
 
 # 将DataFrame写入Excel
 def write_df_to_excel(writer, df, sheet_name):
@@ -100,7 +79,7 @@ def write_df_to_excel(writer, df, sheet_name):
         worksheet.column_dimensions[column].width = adjusted_width
 
 with pd.ExcelWriter('crypto_strength_weakness_rs.xlsx', engine='openpyxl') as writer:
-    write_df_to_excel(writer, sorted_df, 'All USDT Contracts')
+    write_df_to_excel(writer, df, 'All USDT Contracts')
     write_df_to_excel(writer, top_10, 'Top 10 Strongest')
     write_df_to_excel(writer, bottom_10, 'Top 10 Weakest')
     write_df_to_excel(writer, continuously_strong, 'Continuously Strong')
