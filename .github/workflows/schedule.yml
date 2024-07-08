@@ -9,12 +9,11 @@ jobs:
   get-ip:
     runs-on: ubuntu-latest
     outputs:
-      runner_ip: ${{ steps.get-ip.outputs.RUNNER_IP }}
+      runner_ip: ${{ steps.get-ip.outputs.result }} 
     steps:
       - name: Get runner IP address
         id: get-ip
-        run: |
-          echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
+        run: echo "::set-output name=result::$(curl -s https://api.ipify.org)"
 
   run_python_task:
     runs-on: ubuntu-latest
@@ -30,10 +29,10 @@ jobs:
         run: |
          python -m pip install --upgrade pip
          pip install -r requirements.txt
+      - name: Display runner IP
+        run: echo "Runner IP: ${{needs.get-ip.outputs.runner_ip}}"
       - name: Run Python script
-        run: |
-          echo "Runner IP: $RUNNER_IP"
-          python autoRank.py
+        run: python autoRank.py
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
