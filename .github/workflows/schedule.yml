@@ -12,7 +12,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const { exec } = require('@actions/exec');
             const ip = await exec('curl', ['https://api.ipify.org']);
             console.log(`Public IP Address: ${ip}`);
   run_python_task:
