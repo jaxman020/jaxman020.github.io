@@ -2,7 +2,7 @@ name: Schedule Task
 
 on:
   schedule:
-    - cron: '35 6 * * *' # 每天的台湾时间下午2:20运行
+    - cron: '45 6 * * *' # 每天的台湾时间下午2:20运行
 
 jobs:
   build:
