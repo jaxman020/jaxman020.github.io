@@ -7,13 +7,19 @@ from datetime import datetime, timedelta
 # 获取币安合约资料
 def fetch_binance_contracts():
     exchange = ccxt.binance()
-    markets = exchange.load_markets()
-    symbols = [
-        symbol
-        for symbol in markets
-        if symbol.endswith("USDT") and "swap" in markets[symbol]["type"]
-    ]
-    return symbols
+    try:
+        markets = exchange.load_markets()
+
+        symbols = [
+            symbol
+            for symbol in markets
+            if symbol.endswith("USDT") and "swap" in markets[symbol]["type"]
+        ]
+        return symbols
+    except ccxt.ExchangeNotAvailable:
+        print("Error: Binance API is not available from this location.")
+        # 您可以選擇在這裡返回空列表或預設值
+        return []  # 或者其他適合您邏輯的值
 
 
 # 获取单日涨跌幅资料
