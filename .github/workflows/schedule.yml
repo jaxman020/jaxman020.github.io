@@ -13,27 +13,8 @@ jobs:
     steps:
       - name: Get runner IP address
         id: get-ip
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const core1 = require('@actions/core');
-
-            async function getIp() {
-              let output = '';
-              const options = {};
-              options.listeners = {
-                stdout: (data) => {
-                  output += data.toString();
-                },
-              };
-
-              await exec('curl', ['https://api.ipify.org'], options);
-              return output.trim();
-            }
-
-            getIp().then((ip) => {
-              core1.setOutput('RUNNER_IP', ip);
-            });
+        run: |
+          echo "RUNNER_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
 
   run_python_task:
     runs-on: ubuntu-latest
@@ -51,7 +32,7 @@ jobs:
          pip install -r requirements.txt
       - name: Run Python script
         run: |
-          echo "Runner IP: ${{needs.get-ip.outputs.runner_ip}}"
+          echo "Runner IP: $RUNNER_IP"
           python autoRank.py
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
