@@ -9,11 +9,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get runner IP address
+        id: get-ip
         uses: actions/github-script@v6
         with:
           script: |
-            const ip = await exec('curl', ['https://api.ipify.org']);
-            console.log(`Public IP Address: ${ip}`);
+            const exec = require('@actions/exec').exec;
+            const core = require('@actions/core');
+
+            async function getIp() {
+              let output = '';
+              const options = {};
+              options.listeners = {
+                stdout: (data) => {
+                  output += data.toString();
+                },
+              };
+
+              await exec('curl', ['https://api.ipify.org'], options);
+              return output.trim();
+            }
+
+            getIp().then((ip) => {
+              core.setOutput('RUNNER_IP', ip);
+            });
+
+      - name: Log runner IP address
+        run: echo "The runner's IP address is ${{ steps.get-ip.outputs.RUNNER_IP }}"
   run_python_task:
     runs-on: ubuntu-latest
     steps:
