@@ -5,6 +5,16 @@ on:
   schedule:
     - cron: '0 0 * * *'  # UTC+8 上午 8 點整
 jobs:
+  get-ip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get runner IP address
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { exec } = require('@actions/exec');
+            const ip = await exec('curl', ['https://api.ipify.org']);
+            console.log(`Public IP Address: ${ip}`);
   run_python_task:
     runs-on: ubuntu-latest
     steps:
