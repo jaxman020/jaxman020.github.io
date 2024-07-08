@@ -72,6 +72,9 @@ def write_df_to_excel(writer, df, sheet_name):
 # 主函数
 def main():
     symbols = fetch_binance_contracts()
+    if symbols == []:
+        return
+    
     all_data = pd.DataFrame()
 
     for symbol in symbols:
