@@ -1,10 +1,9 @@
 name: Scheduled Python Task
 
 on:
-  workflow_dispatch:   # 手動觸發
+  workflow_dispatch:   # 手動觸發 (可選)
   schedule:
-    - cron: '*/5 * * * *'  # 每 5 分鐘執行一次
-
+    - cron: '0 0 * * *'  # UTC+8 上午 8 點整
 jobs:
   run_python_task:
     runs-on: ubuntu-latest
