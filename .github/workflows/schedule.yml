@@ -4,9 +4,12 @@ on:
   workflow_dispatch:   # 手動觸發 (可選)
   schedule:
     - cron: '0 0 * * *'  # UTC+8 上午 8 點整
+
 jobs:
   get-ip:
     runs-on: ubuntu-latest
+    outputs:
+      runner_ip: ${{ steps.get-ip.outputs.RUNNER_IP }}  # 將 IP 設為 job 的 output
     steps:
       - name: Get runner IP address
         id: get-ip
@@ -15,7 +18,7 @@ jobs:
           script: |
             const exec = require('@actions/exec').exec;
             const core = require('@actions/core');
-
+            
             async function getIp() {
               let output = '';
               const options = {};
@@ -33,10 +36,9 @@ jobs:
               core.setOutput('RUNNER_IP', ip);
             });
 
-      - name: Log runner IP address
-        run: echo "The runner's IP address is ${{ steps.get-ip.outputs.RUNNER_IP }}"
   run_python_task:
     runs-on: ubuntu-latest
+    needs: get-ip  # 讓此 job 等待 get-ip 完成
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -49,10 +51,11 @@ jobs:
          python -m pip install --upgrade pip
          pip install -r requirements.txt
       - name: Run Python script
-        run: python autoRank.py
-
+        run: |
+          echo "Runner IP: ${{needs.get-ip.outputs.runner_ip}}"  # 輸出 IP
+          python autoRank.py
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public  
+          publish_dir: ./public
