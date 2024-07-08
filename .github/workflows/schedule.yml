@@ -1,6 +1,7 @@
 name: Scheduled Python Task
 
 on:
+  workflow_dispatch:   # 手動觸發
   schedule:
     - cron: '*/5 * * * *'  # 每 5 分鐘執行一次
 
