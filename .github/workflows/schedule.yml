@@ -16,7 +16,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const core = require('@actions/core');
+            const core1 = require('@actions/core');
 
             async function getIp() {
               let output = '';
@@ -32,7 +32,7 @@ jobs:
             }
 
             getIp().then((ip) => {
-              core.setOutput('RUNNER_IP', ip);
+              core1.setOutput('RUNNER_IP', ip);
             });
 
   run_python_task:
