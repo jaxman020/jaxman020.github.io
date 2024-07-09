@@ -32,7 +32,7 @@ jobs:
           body: Daily binance market data.
           to: jaxman020@gmail.com
           from: ${{ secrets.EMAIL_USERNAME }}
-          attachments: Daily.txt
+          attachments: binance_contracts_rs.txt
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
