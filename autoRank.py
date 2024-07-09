@@ -1,22 +1,27 @@
 import ccxt
+import requests
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
 # 代理URL
-proxyUrl = "http://Y6R9pAtvxxzmGC@85.208.108.20:5601"
+proxy_url = "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
 
 # 代理配置
-proxy = {
-    "http": proxyUrl,
-    "https": proxyUrl,
-}
+proxy = {"http": proxy_url, "https": proxy_url}
 
 
 # 获取币安合约资料
 def fetch_binance_contracts():
     exchange = ccxt.binance(
-        #{"proxies": proxy}
+        {
+            "aiohttp_proxy": proxy["http"],
+            "requests_proxy": proxy["http"],
+            "options": {
+                "adjustForTimeDifference": True,  # 确保时间同步
+                "skip_cert_verify": True,  # 跳过证书验证
+            },
+        }
     )
     try:
         markets = exchange.load_markets()
