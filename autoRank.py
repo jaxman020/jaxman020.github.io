@@ -3,10 +3,21 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+# 代理URL
+proxyUrl = "http://Y6R9pAtvxxzmGC@85.208.108.20:5601"
+
+# 代理配置
+proxy = {
+    "http": proxyUrl,
+    "https": proxyUrl,
+}
+
 
 # 获取币安合约资料
 def fetch_binance_contracts():
-    exchange = ccxt.binance()
+    exchange = ccxt.binance(
+        #{"proxies": proxy}
+    )
     try:
         markets = exchange.load_markets()
 
@@ -74,7 +85,7 @@ def main():
     symbols = fetch_binance_contracts()
     if symbols == []:
         return
-    
+
     all_data = pd.DataFrame()
 
     for symbol in symbols:
