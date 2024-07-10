@@ -26,9 +26,8 @@ jobs:
         env:
           HTTP_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
           HTTPS_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
-          REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
         run: |
-          python /mnt/data/autoRank.py
+          python autoRank.py
 
       - name: Send email
         env:
