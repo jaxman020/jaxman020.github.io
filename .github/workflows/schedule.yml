@@ -24,7 +24,13 @@ jobs:
 
       - name: Run Python script
         run: python autoRank.py
-        
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+
       - name: Send email
         uses: dawidd6/action-send-mail@v3
         with:
@@ -37,9 +43,3 @@ jobs:
           to: jaxman020@gmail.com
           from: ${{ secrets.EMAIL_USERNAME }}
           attachments: binance_contracts_rs.txt
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
