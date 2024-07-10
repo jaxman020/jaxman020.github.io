@@ -1,12 +1,12 @@
-name: Scheduled Python Task
+name: AutoRank
 
 on:
-  workflow_dispatch: # 手動觸發 (可選)
   schedule:
-    - cron: "0 0 * * *" # UTC+8 上午 8 點整
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
-  run_python_task:
+  auto_rank_job:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,27 +22,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Python script
+      - name: Run the autoRank script
+        env:
+          HTTP_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
+          HTTPS_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
+          REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
         run: |
-          export http_proxy=http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443
-          export https_proxy=http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443
-          python autoRank.py
-
-      - name: Verify file exists
-        run: ls -l binance_contracts_rs.txt
+          python /mnt/data/autoRank.py
 
       - name: Send email
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Binance Market Data
-          body: Daily binance market data.
-          to: jaxman020@gmail.com
-          from: ${{ secrets.EMAIL_USERNAME }}
-          attachments: binance_contracts_rs.txt
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        run: |
+          python send_email.py --attachment binance_contracts_rs.txt
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

@@ -3,22 +3,22 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# 代理URL
-proxy_url = "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
+# Proxy URL
+proxy_url = os.getenv("HTTP_PROXY")
 
-# 代理配置
+# Proxy configuration
 proxy = {"http": proxy_url, "https": proxy_url}
 
 
-# 获取币安合约资料
+# Function to get Binance contract data
 def fetch_binance_contracts():
     exchange = ccxt.binance(
         {
             "aiohttp_proxy": proxy["http"],
             "requests_proxy": proxy["http"],
             "options": {
-                "adjustForTimeDifference": True,  # 确保时间同步
-                "skip_cert_verify": True,  # 跳过证书验证
+                "adjustForTimeDifference": True,  # Ensure time sync
+                "skip_cert_verify": True,  # Skip cert verification
             },
         }
     )
@@ -33,11 +33,10 @@ def fetch_binance_contracts():
         return symbols
     except ccxt.ExchangeNotAvailable:
         print("Error: Binance API is not available from this location.")
-        # 您可以選擇在這裡返回空列表或預設值
-        return []  # 或者其他適合您邏輯的值
+        return []
 
 
-# 获取单日涨跌幅资料
+# Function to fetch daily changes
 def fetch_daily_changes(symbol, days=11):
     exchange = ccxt.binance()
     since = exchange.parse8601((datetime.now() - timedelta(days=days)).isoformat())
@@ -47,10 +46,10 @@ def fetch_daily_changes(symbol, days=11):
     )
     df["date"] = pd.to_datetime(df["timestamp"], unit="ms")
     df["change_pct"] = df["close"].pct_change() * 100
-    return df.dropna().iloc[:-1]  # 排除今天的数据
+    return df.dropna().iloc[:-1] # Exclude today's data
 
 
-# 计算所有标的的RS值
+# Function to calculate RS values
 def calculate_rs(all_data):
     all_data["rs"] = all_data.groupby("date")["change_pct"].rank(
         ascending=True, method="min"
@@ -60,14 +59,14 @@ def calculate_rs(all_data):
     return all_data
 
 
-# 计算加权RS值
+# Function to calculate weighted RS values
 def calculate_weighted_rs(rs_series):
     weights = np.array([5, 4, 3, 2, 1])
     weighted_rs = np.dot(rs_series[-5:], weights) / weights.sum()
     return weighted_rs
 
 
-# 将DataFrame写入Excel
+# Function to write DataFrame to Excel
 def write_df_to_excel(writer, df, sheet_name):
     df.to_excel(writer, sheet_name=sheet_name, index=False)
     worksheet = writer.sheets[sheet_name]
@@ -83,8 +82,7 @@ def write_df_to_excel(writer, df, sheet_name):
         adjusted_width = max_length + 2
         worksheet.column_dimensions[column].width = adjusted_width
 
-
-# 主函数
+# Main function
 def main():
     symbols = fetch_binance_contracts()
     if symbols == []:
@@ -149,7 +147,6 @@ def main():
     ]
     df_weakest = df_results.sort_values(by="rs_last_day", ascending=True).head(10)
 
-    # 添加前五日的每日加权与未加权RS值
     def add_rs_values(df):
         df = df.copy()  # 确保对 DataFrame 的操作不会引发 SettingWithCopyWarning
         df.loc[:, "rs_day_1"] = df["rs_last_5_days"].apply(
@@ -190,7 +187,6 @@ def main():
     df_gradually_strong = add_rs_values(df_gradually_strong)
     df_weakest = add_rs_values(df_weakest)
 
-    # 生成TXT文件内容
     date_str = datetime.now().strftime("%Y/%m/%d")
     sheets = {
         "###Top 10 Strongest": df_top_10,
