@@ -23,7 +23,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Python script
-        run: python autoRank.py
+        run: |
+          export http_proxy=http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443
+          export https_proxy=http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443
+          python autoRank.py
 
       - name: Verify file exists
         run: ls -l binance_contracts_rs.txt
