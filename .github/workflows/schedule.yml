@@ -22,19 +22,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run the autoRank script
-        env:
-          HTTP_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
-          HTTPS_PROXY: "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
-        run: |
-          python autoRank.py
-
+      - name: Run Python script
+        run: python autoRank.py
+        
       - name: Send email
-        env:
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-        run: |
-          python send_email.py --attachment binance_contracts_rs.txt
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Binance Market Data
+          body: Daily binance market data.
+          to: jaxman020@gmail.com
+          from: ${{ secrets.EMAIL_USERNAME }}
+          attachments: binance_contracts_rs.txt
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

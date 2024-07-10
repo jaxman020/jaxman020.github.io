@@ -5,7 +5,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 # Proxy URL
-proxy_url = os.getenv("HTTP_PROXY")
+proxy_url = "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
 
 # Proxy configuration
 proxy = {"http": proxy_url, "https": proxy_url}
@@ -47,7 +47,7 @@ def fetch_daily_changes(symbol, days=11):
     )
     df["date"] = pd.to_datetime(df["timestamp"], unit="ms")
     df["change_pct"] = df["close"].pct_change() * 100
-    return df.dropna().iloc[:-1] # Exclude today's data
+    return df.dropna().iloc[:-1]  # Exclude today's data
 
 
 # Function to calculate RS values
@@ -82,6 +82,7 @@ def write_df_to_excel(writer, df, sheet_name):
                 pass
         adjusted_width = max_length + 2
         worksheet.column_dimensions[column].width = adjusted_width
+
 
 # Main function
 def main():
