@@ -1,9 +1,9 @@
 name: Scheduled Python Task
 
 on:
-  workflow_dispatch:   # 手動觸發 (可選)
+  workflow_dispatch: # 手動觸發 (可選)
   schedule:
-    - cron: '0 0 * * *'  # UTC+8 上午 8 點整
+    - cron: "0 0 * * *" # UTC+8 上午 8 點整
 
 jobs:
   run_python_task:
@@ -11,16 +11,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' 
+          python-version: "3.12"
+
       - name: Install dependencies
         run: |
-         python -m pip install --upgrade pip
-         pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Run Python script
         run: python autoRank.py
+
+      - name: Verify file exists
+        run: ls -l binance_contracts_rs.txt
+
       - name: Send email
         uses: dawidd6/action-send-mail@v3
         with:
@@ -33,6 +40,7 @@ jobs:
           to: jaxman020@gmail.com
           from: ${{ secrets.EMAIL_USERNAME }}
           attachments: binance_contracts_rs.txt
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

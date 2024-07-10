@@ -1,5 +1,4 @@
 import ccxt
-import requests
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -201,7 +200,7 @@ def main():
         "###Top 10 Weakest": df_weakest,
     }
 
-    txt_content = f"###{date_str}"
+    txt_content = f"###{date_str} "
     for sheet_name, df in sheets.items():
         symbols_list = ",".join(
             [
