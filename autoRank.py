@@ -4,25 +4,10 @@ import os
 import numpy as np
 from datetime import datetime, timedelta
 
-# Proxy URL
-proxy_url = "http://e05c749b-7c6b-41b8-9c71-9dcf685edf4a@jgwhdlb1.gaox.ml:443"
-
-# Proxy configuration
-proxy = {"http": proxy_url, "https": proxy_url}
-
 
 # Function to get Binance contract data
 def fetch_binance_contracts():
-    exchange = ccxt.binance(
-        {
-            "aiohttp_proxy": proxy["http"],
-            "requests_proxy": proxy["http"],
-            "options": {
-                "adjustForTimeDifference": True,  # Ensure time sync
-                "skip_cert_verify": True,  # Skip cert verification
-            },
-        }
-    )
+    exchange = ccxt.binance()
     try:
         markets = exchange.load_markets()
 
