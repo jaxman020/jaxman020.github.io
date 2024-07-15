@@ -4,7 +4,6 @@ import os
 import numpy as np
 from datetime import datetime, timedelta
 
-
 # Function to get Binance contract data
 def fetch_binance_contracts():
     exchange = ccxt.binance()
@@ -176,14 +175,14 @@ def main():
 
     date_str = datetime.now().strftime("%Y/%m/%d")
     sheets = {
-        "###Top 10 Strongest": df_top_10,
-        "###Next 10 Strongest": df_next_10,
-        "###Continuously Strong": df_continuously_strong,
-        "###Gradually Strong": df_gradually_strong,
-        "###Top 10 Weakest": df_weakest,
+        "Top 10 Strongest": df_top_10,
+        "Next 10 Strongest": df_next_10,
+        "Continuously Strong": df_continuously_strong,
+        "Gradually Strong": df_gradually_strong,
+        "Top 10 Weakest": df_weakest,
     }
 
-    txt_content = f"###{date_str} "
+    txt_content = f"###{date_str},BINANCE:BTCUSDT.p,BINANCE:ETHUSDT.p,BINANCE:BNBUSDT.p \n"
     for sheet_name, df in sheets.items():
         symbols_list = ",".join(
             [
@@ -191,7 +190,7 @@ def main():
                 for symbol in df["symbol"]
             ]
         )
-        txt_content += f" {sheet_name},{symbols_list}\n"
+        txt_content += f"###{sheet_name},{symbols_list}\n"
 
     with open("binance_contracts_rs.txt", "w") as f:
         f.write(txt_content)
@@ -204,6 +203,7 @@ def main():
         write_df_to_excel(writer, df_gradually_strong, "Gradually Strong")
         write_df_to_excel(writer, df_weakest, "Top 10 Weakest")
 
+    return f"binance_contracts_rs.txt"
 
 if __name__ == "__main__":
     main()
