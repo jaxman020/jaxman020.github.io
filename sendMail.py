@@ -5,8 +5,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import os
-import datetime
-
 
 load_dotenv("autorankbyrs.env")  # 載入 .env 檔案
 
@@ -29,8 +27,7 @@ def send_email(filePath):
         )
         msg.attach(part)
     else:
-        with open("log.txt", "a") as f:
-            f.write(f"No file found at {datetime.datetime.now()}\n")
+        print("No file found.")
         return
 
     html_content = """
@@ -50,26 +47,17 @@ def send_email(filePath):
             server.starttls()
             server.login(sender, app_password)
             server.sendmail(sender, recipient, msg.as_string())
-        with open("log.txt", "a") as f:
-            f.write(f"Email sent successfully at {datetime.datetime.now()}\n")
+        print("Email sent successfully.")
     except Exception as e:
-        with open("log.txt", "a") as f:
-            f.write(f"Failed to send email at {datetime.datetime.now()}\n {e}\n")
+        print(f"Failed to send email: {e}")
 
 
 def do_rank():
-    with open("log.txt", "w") as f:
-        f.write(f"Script executed at {datetime.datetime.now()}\n")
-
     filePath = autoRank.main()
-
-    with open("log.txt", "a") as f:
-        f.write(f"{filePath} created at {datetime.datetime.now()}\n")
+    print(filePath)
 
     send_email(filePath)
-
-    with open("log.txt", "a") as f:
-        f.write(f"do_rank done at {datetime.datetime.now()}\n")
+    return "do_rank done!"
 
 
 if __name__ == "__main__":
